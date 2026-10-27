@@ -44,7 +44,7 @@ export default function RootLayout() {
     return (
       <>
         <LockScreen pinHash={pinHash} onUnlock={unlock} />
-        <StatusBar style="light" backgroundColor={colors.background} />
+        <StatusBar style="light" />
       </>
     );
   }
@@ -54,7 +54,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="+not-found" />
       </Stack>
-      <StatusBar style="light" backgroundColor={colors.background} />
+      <StatusBar style="light" />
     </CurrencyProvider>
   );
 }

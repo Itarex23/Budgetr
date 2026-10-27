@@ -103,7 +103,7 @@ export default function SettingsScreen() {
     try {
       const [expenses, categories] = await Promise.all([getExpenses(), getCategories()]);
       const csv = expensesToCsv(expenses, categories);
-      downloadFile(csv, generateExportFilename('csv'), 'text/csv');
+      await downloadFile(csv, generateExportFilename('csv'), 'text/csv');
     } catch {
       Alert.alert('Export failed', 'Could not export your data. Try again.');
     } finally {
@@ -116,7 +116,7 @@ export default function SettingsScreen() {
     try {
       const [expenses, categories, bills] = await Promise.all([getExpenses(), getCategories(), getRecurringBills()]);
       const json = exportToJson({ expenses, categories, bills });
-      downloadFile(json, generateExportFilename('json'), 'application/json');
+      await downloadFile(json, generateExportFilename('json'), 'application/json');
     } catch {
       Alert.alert('Export failed', 'Could not export your data. Try again.');
     } finally {

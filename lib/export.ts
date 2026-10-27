@@ -1,4 +1,6 @@
 import { Platform } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import type { Category, Expense, RecurringBill } from '@/types';
 
 type ExportData = {
@@ -38,20 +40,30 @@ export function exportToJson(data: ExportData): string {
   }, null, 2);
 }
 
-export function downloadFile(content: string, filename: string, mimeType: string): void {
-  if (Platform.OS !== 'web' || typeof globalThis.document === 'undefined') return;
-  const blob = new Blob([content], { type: `${mimeType};charset=utf-8` });
-  const url = globalThis.URL.createObjectURL(blob);
-  const link = globalThis.document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  globalThis.document.body.appendChild(link);
-  link.click();
-  globalThis.document.body.removeChild(link);
-  globalThis.URL.revokeObjectURL(url);
+export async function downloadFile(content: string, filename: string, mimeType: string): Promise<void> {
+  if (Platform.OS === 'web') {
+    if (typeof globalThis.document === 'undefined') return;
+    const blob = new Blob([content], { type: `${mimeType};charset=utf-8` });
+    const url = globalThis.URL.createObjectURL(blob);
+    const link = globalThis.document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    globalThis.document.body.appendChild(link);
+    link.click();
+    globalThis.document.body.removeChild(link);
+    globalThis.URL.revokeObjectURL(url);
+    return;
+  }
+
+  const uri = `${FileSystem.cacheDirectory}${filename}`;
+  await FileSystem.writeAsStringAsync(uri, content, { encoding: FileSystem.EncodingType.UTF8 });
+  if (!(await Sharing.isAvailableAsync())) {
+    throw new Error('Sharing is not available on this device');
+  }
+  await Sharing.shareAsync(uri, { mimeType, dialogTitle: 'Export Budgetr data' });
 }
 
 export function generateExportFilename(format: 'csv' | 'json'): string {
   const date = new Date().toISOString().slice(0, 10);
-  return `daily-money-export-${date}.${format}`;
+  return `budgetr-export-${date}.${format}`;
 }
